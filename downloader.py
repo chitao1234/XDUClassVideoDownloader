@@ -74,14 +74,12 @@ def process_rows(rows, course_code, course_name, year, save_dir, command='', mer
 
         # 检查是否存在和当前文件名相同但是 jie 少 1 或者多 1 的文件
         prev_filepath = os.path.join(save_dir, f"{course_code}{course_name}{year}年{month}月{date}日第{days}周星期{day_chinese}第{jie-1}节-{track_type}.ts")
-        prev_filepath = os.path.join(save_dir, f"{course_code}{course_name}{year}年{month}月{date}日第{days}周星期{day_chinese}第{jie-1}节-{track_type}.mp4")
-        next_filepath = os.path.join(save_dir, f"{course_code}{course_name}{year}年{month}月{date}日第{days}周星期{day_chinese}第{jie+1}节-{track_type}.ts")
         next_filepath = os.path.join(save_dir, f"{course_code}{course_name}{year}年{month}月{date}日第{days}周星期{day_chinese}第{jie+1}节-{track_type}.ts")
         
         files_to_merge = []
-        if os.path.exists(prev_filepath) and prev_filepath.endswith('.ts'):
+        if os.path.exists(prev_filepath):
             files_to_merge.append(prev_filepath)
-        if os.path.exists(next_filepath) and next_filepath.endswith('.ts'):
+        if os.path.exists(next_filepath):
             files_to_merge.append(next_filepath)
             
         if files_to_merge and all(f.endswith('.ts') for f in files_to_merge):
