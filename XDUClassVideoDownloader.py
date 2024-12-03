@@ -12,7 +12,7 @@ from api import get_initial_data, get_m3u8_links, check_update
 
 check_update()
 
-def main(liveid=None, command='', single=0, merge=True):
+def main(liveid=None, command='', single=0, merge=True, from_csv_file=''):
     if not liveid:
         liveid = int(user_input_with_check("请输入 liveId：", lambda x: x.isdigit() and len(x) <= 10))
         single = user_input_with_check("是否仅下载单节课视频？输入 y 下载单节课，n 下载这门课所有视频，s 则仅下载单集（半节课）视频，直接回车默认单节课 (Y/n/s):", lambda x: x.lower() in ['', 'y', 'n', 's']).lower()
@@ -48,33 +48,39 @@ def main(liveid=None, command='', single=0, merge=True):
     save_dir = f"{year}年{course_code}{course_name}"
     create_directory(save_dir)
 
-    csv_filename = f"{save_dir}.csv"
-
     rows = []
-    for entry in tqdm(data, desc="获取视频链接"):
-        if entry["endTime"]["time"] / 1000 > time.time():
-            continue
+    if not from_csv_file:
+        csv_filename = f"{save_dir}.csv"
 
-        try:
-            ppt_video, teacher_track = get_m3u8_links(entry["id"])
-        except ValueError as e:
-            print(f"获取视频链接时发生错误：{e}，liveId: {entry['id']}")
-            ppt_video, teacher_track = '', ''
+        for entry in tqdm(data, desc="获取视频链接"):
+            if entry["endTime"]["time"] / 1000 > time.time():
+                continue
 
-        start_time_struct = time.gmtime(entry["startTime"]["time"] / 1000)
-        row = [
-            start_time_struct.tm_mon, start_time_struct.tm_mday, 
-            entry["startTime"]["day"], entry["jie"], entry["days"], 
-            ppt_video, teacher_track
-        ]
-        rows.append(row)
+            try:
+                ppt_video, teacher_track = get_m3u8_links(entry["id"])
+            except ValueError as e:
+                print(f"获取视频链接时发生错误：{e}，liveId: {entry['id']}")
+                ppt_video, teacher_track = '', ''
 
-    with open(csv_filename, mode='w', newline='') as file:
-        writer = csv.writer(file)
-        writer.writerow(['month', 'date', 'day', 'jie', 'days', 'pptVideo', 'teacherTrack'])
-        writer.writerows(rows)
+            start_time_struct = time.gmtime(entry["startTime"]["time"] / 1000)
+            row = [
+                start_time_struct.tm_mon, start_time_struct.tm_mday, 
+                entry["startTime"]["day"], entry["jie"], entry["days"], 
+                ppt_video, teacher_track
+            ]
+            rows.append(row)
 
-    print(f"{csv_filename} 文件已创建并写入数据。")
+        with open(csv_filename, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['month', 'date', 'day', 'jie', 'days', 'pptVideo', 'teacherTrack'])
+            writer.writerows(rows)
+
+        print(f"{csv_filename} 文件已创建并写入数据。")
+    else:
+        with open(from_csv_file, mode='r') as file:
+            reader = csv.reader(file)
+            next(reader, None)  # skip the headers
+            rows = list(reader)
 
     if single == 1:
         process_rows(rows[:2], course_code, course_name, year, save_dir, command, merge)
@@ -106,13 +112,14 @@ def parse_arguments():
     parser.add_argument('-c', '--command', default='', help="自定义下载命令，使用 {url}, {save_dir}, {filename} 作为替换标记")
     parser.add_argument('-s', '--single', action='count', default=0, help="仅下载单节课视频（-s：单节课视频，-ss：半节课视频）")
     parser.add_argument('--no-merge', action='store_false', help="不合并上下半节课视频")
+    parser.add_argument('-f', '--from-file', default='', help="From file")
 
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = parse_arguments()
     try:
-        main(liveid=args.liveid, command=args.command, single=args.single, merge=args.no_merge)
+        main(liveid=args.liveid, command=args.command, single=args.single, merge=args.no_merge, from_csv_file=args.from_file)
     except Exception as e:
         print(f"发生错误：{e}")
         print(traceback.format_exc())

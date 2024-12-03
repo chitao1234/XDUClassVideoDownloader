@@ -5,6 +5,7 @@ import configparser
 import traceback
 
 def day_to_chinese(day):
+    day = int(day)
     days = {0: "日", 1: "一", 2: "二", 3: "三", 4: "四", 5: "五", 6: "六"}
     return days.get(day, "未知")
 
