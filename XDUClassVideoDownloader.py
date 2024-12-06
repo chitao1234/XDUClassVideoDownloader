@@ -32,13 +32,13 @@ def main(liveid=None, command='', single=0, merge=True, from_csv_file=''):
         print("没有找到数据，请检查 liveId 是否正确。")
         return
 
-    if single:
+    if single == 2:
         data = [entry for entry in data if entry["id"] == liveid]
         if not data:
             raise ValueError("No matching entry found for the specified liveId")
-        if single == 1:
-            start_time = data[0]["startTime"]
-            data = [entry for entry in data if entry["startTime"]["date"] == start_time["date"] and entry["startTime"]["month"] == start_time["month"]]
+    elif single == 1:
+        start_time = [entry for entry in data if entry["id"] == liveid][0]["startTime"]
+        data = [entry for entry in data if entry["startTime"]["date"] == start_time["date"] and entry["startTime"]["month"] == start_time["month"]]
 
     first_entry = data[0]
     year = time.gmtime(first_entry["startTime"]["time"] / 1000).tm_year
@@ -83,7 +83,8 @@ def main(liveid=None, command='', single=0, merge=True, from_csv_file=''):
             rows = list(reader)
 
     if single == 1:
-        process_rows(rows[:2], course_code, course_name, year, save_dir, command, merge)
+        print(rows)
+        process_rows(rows, course_code, course_name, year, save_dir, command, merge)
     elif single == 2:
         row = rows[0]
         month, date, day, jie, days, ppt_video, teacher_track = row
