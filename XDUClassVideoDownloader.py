@@ -44,8 +44,9 @@ def main(liveid=None, command='', single=0, merge=True, from_csv_file=''):
     year = time.gmtime(first_entry["startTime"]["time"] / 1000).tm_year
     course_code = first_entry["courseCode"]
     course_name = first_entry["courseName"]
+    class_name = first_entry["clazzName"]
 
-    save_dir = f"{year}年{course_code}{course_name}"
+    save_dir = f"{year}年{course_code}{course_name}{class_name}"
     create_directory(save_dir)
 
     rows = []
