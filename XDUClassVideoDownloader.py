@@ -110,7 +110,7 @@ def main(liveid=None, command='', single=0, merge=True, from_csv_file=''):
 
 def parse_arguments():
     parser = ArgumentParser(description="用于下载西安电子科技大学录直播平台课程视频的工具")
-    parser.add_argument('liveid', nargs='?', default=None, help="课程的 liveId，不输入则采用交互式方式获取")
+    parser.add_argument('liveid', nargs='*', default=None, help="课程的 liveId，不输入则采用交互式方式获取")
     parser.add_argument('-c', '--command', default='', help="自定义下载命令，使用 {url}, {save_dir}, {filename} 作为替换标记")
     parser.add_argument('-s', '--single', action='count', default=0, help="仅下载单节课视频（-s：单节课视频，-ss：半节课视频）")
     parser.add_argument('--no-merge', action='store_false', help="不合并上下半节课视频")
@@ -120,8 +120,9 @@ def parse_arguments():
 
 if __name__ == "__main__":
     args = parse_arguments()
-    try:
-        main(liveid=args.liveid, command=args.command, single=args.single, merge=args.no_merge, from_csv_file=args.from_file)
-    except Exception as e:
-        print(f"发生错误：{e}")
-        print(traceback.format_exc())
+    for liveid in args.liveid:
+        try:
+            main(liveid=liveid, command=args.command, single=args.single, merge=args.no_merge, from_csv_file=args.from_file)
+        except Exception as e:
+            print(f"发生错误：{e}")
+            print(traceback.format_exc())
